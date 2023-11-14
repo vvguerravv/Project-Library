@@ -1,6 +1,8 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef struct {
     char *user;
@@ -47,6 +49,7 @@ int alloc_login(reader_t *login)
 
 void new_login(chainedReader_t **start, reader_t *login)
 {
+
     chainedReader_t *new = (chainedReader_t*) malloc(sizeof(chainedReader_t));
     new->login.email = (char*) malloc(strlen(login->email) + 1);
     new->login.password = (char*) malloc(strlen(login->password) + 1);
@@ -90,10 +93,36 @@ void new_book(chainedBook_t **start, book_t *book) {
     }
 }
 
+bool sigin(chainedReader_t **no,reader_t login)
+{
+    chainedReader_t *current = *no;
+    while (current != NULL){
+        if(strcmp(current->login.email, login.email) == 0){
+            if(strcmp(current->login.password,login.password) == 0){
+                return true;
+            }
+        }
+        current = current->next;
+    }
+    return false;
+}
+
+bool searchBook(chainedBook_t **no, book_t book)
+{
+    chainedBook_t *current = *no;
+    while(current != NULL){
+        if(strcmp(current->book.book_name,book.book_name) == 0){
+            return true;
+        }
+        current = current->next;
+    }
+    return false;
+}
+
 int main() {
     chainedBook_t *library = NULL;
     book_t book;
-    chainedReader_t *account;
+    chainedReader_t *account = NULL;
     reader_t login;
     int escolha = 1;
 
@@ -107,7 +136,21 @@ int main() {
 
         switch (escolha) {
             case 1:
-
+                if(account == NULL){
+                    printf("Para fazer login, por favor, crie uma conta!!\n");
+                }else{
+                    printf("Digite seu email: ");
+                    fgets(login.email,255,stdin);
+                    login.email[strcspn(login.email, "\n")] = '\0';
+                    printf("Digite sua senha: ");
+                    fgets(login.password,255,stdin);
+                    login.password[strcspn(login.password,"\n")] = '\0';
+                    if(!sigin(&account,login)){
+                        printf("A conta não existe!\n");
+                    } else{
+                        printf("Login efetuado com sucesso!!\n");
+                    }
+                }
                 break;
 
             case 2:
@@ -143,13 +186,77 @@ int main() {
                 fgets(login.password,255,stdin);
                 login.password[strcspn(login.password,"\n")] = '\0';
                 new_login(&account,&login);
-
                 break;
 
             case 4:
+                printf("Digite o nome do livro (ex: As crônicas de Nárnia): ");
+                fgets(book.book_name, 255, stdin);
+                book.book_name[strcspn(book.book_name, "\n")] = '\0';
 
-                break;
+                if (!searchBook(&library, book)) {
+                    printf("O livro não está contido na biblioteca, por favor, procure por outro livro!!\n");
+                } else {
+                    printf("O que você deseja fazer com o livro \"%s\":\n1- Abrir o livro\n2 - Verificar informações do livro"
+                           "(Nome do autor e número de páginas)\n", book.book_name);
 
+                    int esc;
+                    scanf("%d", &esc);
+
+                    while (esc != 0) {
+                        switch (esc) {
+                            case 1:
+                                printf("O livro foi aberto!!\n");
+                                int i = 1;
+                                char action[3] = {};
+                                while (strcasecmp(action,"S") != 0){
+
+                                    printf("Pressione \"P\" para ir para a próxima página, \"A\" para voltar uma página"
+                                           " ou \"S\" para fechar o livro\n");
+
+                                    fgets(action, sizeof(action), stdin);
+
+                                    if (strcasecmp(action, "p\n") == 0) {
+                                        i++;
+                                        printf("Página %d\n", i);
+                                    } else if (strcasecmp(action, "a\n") == 0) {
+                                        if (i == 1) {
+                                            char temp[3];
+                                            printf("Tem certeza de que deseja fechar o livro? ");
+                                            fgets(temp, sizeof(temp), stdin);
+
+                                            if (strcasecmp(temp, "s\n") == 0) {
+                                                esc = 0;
+                                            } else if (strcasecmp(temp, "n\n") == 0) {
+                                                // Continue no loop
+                                            } else {
+                                                printf("Digite uma opção válida!!\n");
+                                            }
+                                        } else {
+                                            i--;
+                                            printf("Página: %d\n", i);
+                                        }
+                                    } else if (strcasecmp(action, "0\n") == 0) {
+                                        esc = 0; // Sair do loop
+                                    } else {
+                                        printf("Digite uma opção válida!!\n");
+                                    }
+                                }
+                                break;
+
+                            case 2:
+                                printf("Nome do autor: %s\n", book.author);
+                                printf("Número de páginas: %d\n", book.pages);
+                                break;
+
+                            default:
+                                printf("Opção inválida. Tente novamente.\n");
+                                break;
+                        }
+
+                        printf("Digite uma opção: ");
+                        scanf("%d", &esc);
+                    }
+                }
             case 5:
 
 
