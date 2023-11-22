@@ -10,11 +10,12 @@ int alloc_book(book_t *book, int size_name_book) {
 }
 
 int alloc_login(reader_t *login) {
-    login->email = (char*) malloc(256 * sizeof(char));
-    login->password = (char*) malloc(256 * sizeof(char));
-    login->user = (char*) malloc(256 * sizeof(char));
+    login->email = (char*) malloc(sizeof(char));
+    login->password = (char*) malloc(sizeof(char));
+    login->user = (char*) malloc(sizeof(char));
 
     if(login->user == NULL || login->password == NULL || login->email == NULL){
+        free(login);
         return 0;
     }
     return 1;
@@ -99,6 +100,7 @@ void destructBook(book_t *book) {
     if(book->author != NULL){
         free(book->author);
     }
+    free(book);
 }
 
 void destructReader(reader_t *login) {
@@ -111,6 +113,7 @@ void destructReader(reader_t *login) {
     if(login->user != NULL){
         free(login->user);
     }
+    free(login);
 }
 
 
